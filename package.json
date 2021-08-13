@@ -1,16 +1,25 @@
 {
   "name": "mineshaft-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Load balancer for chia plotters",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "openapi-generator-cli generate && node ./lib/mineshaft-model-sdl/bin/js_codegen_helper.js ./codegen/src ./codegen/package.json",
+    "clean": "rm -rf ./codegen && rm -rf ./node_modules"
   },
+  "type": "module",
   "keywords": [],
-  "author": "",
+  "author": "Yi Leng",
   "license": "ISC",
   "dependencies": {
+    "@babel/cli": "^7.14.8",
+    "config": "^3.3.6",
     "express": "^4.17.1",
-    "pem": "^1.14.4"
+    "pem": "^1.14.4",
+    "superagent": "^6.1.0"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.3.10"
   }
 }

@@ -1,28 +1,26 @@
-const express = require('express');
-const pem = require("pem");
-const fs = require('fs');
-const https = require('https');
-const spingRouter = require('./src/routes/sping');
-const plotterRouter = require('./src/routes/plotter');
+import config from 'config';
+import express from 'express';
+import fs from 'fs';
+import https from 'https';
+import spingRouter from './src/api/sping.js';
+import plotterRouter from './src/api/router.js';
+import getCerts from './src/utils/pkcs12.js'
+
 const app = express()
-const port = 16384
+const serverConfig = config.get('server');
 
-const p12 = fs.readFileSync('/home/mineshaft/tls/msf_keystore.p12');
+(async () => {
+    app.use(serverConfig.root, spingRouter);
+    app.use(serverConfig.root, plotterRouter);
 
-app.use('/internal', spingRouter);
-app.use('/internal', plotterRouter);
-
-pem.readPkcs12(p12, { p12Password: 'msfkeystore' }, (err, res) => {
-    if (err !== null) {
-        console.log(err);
-    }
+    var certs = await getCerts(
+        fs.readFileSync(serverConfig.p12KeyStorePath), 
+        serverConfig.p12Password
+    );
     https.createServer({
-        ...res,
-        ca: res.ca[0],
-        requestCert: true,
-        rejectUnauthorized: true
-    }, app)
-    .listen(port, () => {
+        ...certs,
+        ...serverConfig
+    }, app).listen(serverConfig.port, () => {
         console.log('MineshaftService started')
     });
-});
+})();

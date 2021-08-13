@@ -1,2 +1,4 @@
 node_modules
+codegen
+lib/*
 .git/
