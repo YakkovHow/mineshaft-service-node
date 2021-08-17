@@ -25,5 +25,10 @@
             "plotterId": "2",
             "plotterIp": "192.168.1.70"
         }
-    ]
+    ],
+    "redisMessageQueue": {
+        "ns": "mss-queues",
+        "host": "localhost",
+        "port": "6379"
+    }
 }

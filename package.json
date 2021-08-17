@@ -17,6 +17,7 @@
     "config": "^3.3.6",
     "express": "^4.17.1",
     "pem": "^1.14.4",
+    "rsmq": "^0.12.4",
     "superagent": "^6.1.0"
   },
   "devDependencies": {

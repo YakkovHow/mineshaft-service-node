@@ -1,11 +1,11 @@
 import https from 'https';
 import fs from 'fs';
 import config from 'config';
-import getCerts from '../utils/pkcs12.js';
+import * as p12 from '../utils/pkcs12.js';
 
 const plotterConfig = config.get('plotter');
-const plotterCerts = (async() => {
-    return await getCerts(
+const plotterCerts = (async () => {
+    return await p12.getCerts(
         fs.readFileSync(plotterConfig.p12KeyStorePath),
         plotterConfig.p12Password
     );
@@ -19,7 +19,7 @@ const plotterIps = (() => {
     return ipMap;
 })();
 
-const queryPlotter = async function(plotterId) {
+export const queryPlotter = async (plotterId) => {
     var certs = await plotterCerts;
     var options = {
         ...plotterConfig,
@@ -27,13 +27,14 @@ const queryPlotter = async function(plotterId) {
         hostname: plotterIps.get(plotterId)
     }
     return new Promise((resolve, reject) => {
-        https.request(options, function(res) {
+        https.request(options, (res) => {
             res.setEncoding('utf8');
-            res.on('data', function(chunk) {
+            res.on('data', (chunk) => {
                 resolve(JSON.parse(chunk));
             });
+        }).on('error', (err) => {
+            console.error(err);
+            reject(err);
         }).end();
     });
 }
-
-export default queryPlotter;
