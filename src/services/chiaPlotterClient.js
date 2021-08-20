@@ -2,6 +2,7 @@ import https from 'https';
 import fs from 'fs';
 import config from 'config';
 import * as p12 from '../utils/pkcs12.js';
+import * as consts from '../utils/consts.js';
 
 const plotterConfig = config.get('plotter');
 const plotterCerts = (async () => {
@@ -10,22 +11,15 @@ const plotterCerts = (async () => {
         plotterConfig.p12Password
     );
 })();
-const plotterIps = (() => {
-    var ipMap = new Map();
-    var plotterInstances = config.get('plotterInstances');
-    for (let instance of plotterInstances) {
-        ipMap.set(instance.plotterId, instance.plotterIp);
-    }
-    return ipMap;
-})();
 
-export const queryPlotter = async (plotterId) => {
+const callPlotterWithIdAndPath = async (plotterId, path, operation) => {
     var certs = await plotterCerts;
     var options = {
         ...plotterConfig,
         ...certs,
-        hostname: plotterIps.get(plotterId)
-    }
+        path: path,
+        hostname: consts.plotterIps.get(plotterId)
+    };
     return new Promise((resolve, reject) => {
         https.request(options, (res) => {
             res.setEncoding('utf8');
@@ -33,8 +27,14 @@ export const queryPlotter = async (plotterId) => {
                 resolve(JSON.parse(chunk));
             });
         }).on('error', (err) => {
-            console.error(err);
+            console.error(`Failed to ${operation} from plotter with id: ${plotterId}`);
             reject(err);
         }).end();
+    }).catch((rej) => {
+        console.log(rej);
     });
-}
+};
+
+export const queryProgress = async (plotterId) => {
+    return callPlotterWithIdAndPath(plotterId, plotterConfig.queryProgressPath, 'queryProgress');
+};

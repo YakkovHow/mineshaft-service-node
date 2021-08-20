@@ -9,7 +9,7 @@
     },
     "plotter": {
         "port": "8443",
-        "path": "/query",
+        "queryProgressPath": "/query/progress",
         "method": "GET",
         "p12KeyStorePath": "/home/mineshaft/tls/mss_keystore.p12",
         "p12Password": "msskeystore",
@@ -29,6 +29,8 @@
     "redisMessageQueue": {
         "ns": "mss-queues",
         "host": "localhost",
-        "port": "6379"
+        "port": "6379",
+        "expectedPipeSize": 100,
+        "pipeCheckCronPattern": "0 */5 * * * *"
     }
 }

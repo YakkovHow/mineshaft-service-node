@@ -1,18 +1,21 @@
 import config from 'config';
 import express from 'express';
-import * as plotterApis from '../services/chiaPlotterApis.js';
+import * as plotterApis from '../services/chiaPlotterClient.js';
 import * as queues from '../services/orderQueues.js';
 import * as models from '../../codegen/src/index.js';
 
 const plotterInstances = config.get('plotterInstances');
 const router = express.Router();
 
-const parseBody = async (stream) => {
-    let buffers = [];
-    for await (let chunk of stream) {
-        buffers.push(chunk);
-    }
-    return Buffer.concat(buffers).toString();
+const parseStream = async (stream) => {
+    const chunks = [];
+    return new Promise((resolve, reject) => {
+        stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+        stream.on('error', (err) => reject(err));
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    }).catch((rej) => {
+        console.log(rej);
+    });
 };
 
 router.get('/query', async (req, res) => {
@@ -20,7 +23,7 @@ router.get('/query', async (req, res) => {
     var progressPromises = [];
     var progressArr = [];
     for (let instance of plotterInstances) {
-        progressPromises = progressPromises.concat(plotterApis.queryPlotter(instance.plotterId));
+        progressPromises = progressPromises.concat(plotterApis.queryProgress(instance.plotterId));
     }
     for (let promise of progressPromises) {
         progressArr = progressArr.concat(await promise);
@@ -36,7 +39,7 @@ router.post('/query-callback', (req, res) => {
 });
 
 router.post('/order', async (req, res) => {
-    var reqBody = await parseBody(req);
+    var reqBody = await parseStream(req);
     console.log(`Received plot order request with body: ${reqBody}`);
 
     var order = models.OrderPlotsWithPublicKeyRequest.constructFromObject(JSON.parse(reqBody));
@@ -45,24 +48,13 @@ router.post('/order', async (req, res) => {
         amount: order.amount
     });
 
-    queues.rsmq.sendMessage({
-        qname: queues.standardQueueName,
-        message: message
-    }, (err) => {
+    await queues.sendMessageToQueue(message, order.prioritize ? queues.fastPassQN : queues.standardQN, (err) => {
         if (err === null) {
-            console.log(`Successfully sent message ${message} to queue: ${queues.standardQueueName}`)
-            res.status(202).send();   
-            return;
+            res.status(200).send();
+        } else {
+            res.status(500).send(err);
         }
-        var errMsg = `Failed to send message: ${order} to queue: ${queues.standardQueueName}, details: ${err}`;
-        console.error(errMsg);
-        res.status(500).send(errMsg);
     });
-});
-
-router.post('/prioritized-order', (req, res) => {
-    // Mock
-    res.status(202).send();
 });
 
 export default router;

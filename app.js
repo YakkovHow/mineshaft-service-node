@@ -4,13 +4,15 @@ import fs from 'fs';
 import https from 'https';
 import spingRouter from './src/api/sping.js';
 import plotterRouter from './src/api/router.js';
-import * as p12 from './src/utils/pkcs12.js'
-import * as queues from './src/services/orderQueues.js'
+import * as p12 from './src/utils/pkcs12.js';
+import * as queues from './src/services/orderQueues.js';
+import * as pipe from './src/services/orderPipeManager.js';
 
 const app = express()
 const serverConfig = config.get('server');
 
-queues.createQueues();
+await queues.createQueues();
+pipe.init();
 
 (async () => {
     app.use(serverConfig.root, spingRouter);
