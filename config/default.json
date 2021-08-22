@@ -3,7 +3,6 @@
         "port": "16384",
         "root": "/internal",
         "p12KeyStorePath": "/home/mineshaft/tls/msf_keystore.p12",
-        "p12Password": "msfkeystore",
         "requestCert": true,
         "rejectUnauthorized": true
     },
@@ -12,8 +11,6 @@
         "queryProgressPath": "/query/progress",
         "method": "GET",
         "p12KeyStorePath": "/home/mineshaft/tls/mss_keystore.p12",
-        "p12Password": "msskeystore",
-        "passphrase": "msspassword",
         "rejectUnauthorized": false
     },
     "plotterInstances": [

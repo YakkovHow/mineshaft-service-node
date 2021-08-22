@@ -20,7 +20,7 @@ pipe.init();
 
     var certs = await p12.getCerts(
         fs.readFileSync(serverConfig.p12KeyStorePath), 
-        serverConfig.p12Password
+        process.env.MSF_KEYSTORE_PASSWORD
     );
     https.createServer({
         ...certs,

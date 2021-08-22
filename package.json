@@ -1,5 +1,5 @@
 {
-  "name": "mineshaft-service",
+  "name": "mineshaft-service-node",
   "version": "1.0.0",
   "description": "Load balancer for chia plotters",
   "main": "app.js",

@@ -1,7 +1,10 @@
 import RedisSMQ from 'rsmq';
 import config from 'config';
 
-export const rsmq = new RedisSMQ(config.get('redisMessageQueue'));
+export const rsmq = new RedisSMQ({
+    ...config.get('redisMessageQueue'),
+    password: process.env.REDIS_DEFAULT_PASSWORD
+});
 
 const queueCreationLogging = (err, queueName) => {
     if (err) {

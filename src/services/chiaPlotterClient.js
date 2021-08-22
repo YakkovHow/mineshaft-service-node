@@ -8,7 +8,7 @@ const plotterConfig = config.get('plotter');
 const plotterCerts = (async () => {
     return await p12.getCerts(
         fs.readFileSync(plotterConfig.p12KeyStorePath),
-        plotterConfig.p12Password
+        process.env.MSS_KEYSTORE_PASSWORD
     );
 })();
 
@@ -17,6 +17,7 @@ const callPlotterWithIdAndPath = async (plotterId, path, operation) => {
     var options = {
         ...plotterConfig,
         ...certs,
+        passphrase: process.env.MSS_PRIVATE_KEY_PASSPHRASE,
         path: path,
         hostname: consts.plotterIps.get(plotterId)
     };
